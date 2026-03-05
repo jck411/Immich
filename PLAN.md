@@ -13,84 +13,56 @@ Deploy Immich as a self-hosted Google Photos replacement on Proxmox — Docker-i
 
 ---
 
-### Phase 1: Repo & Config Prep *(remote, can do now)*
+### Phase 1: Repo & Config Prep — COMPLETE
 
-1. Initialize Git repo at `/home/jack/REPOS/Immich`
-2. Create `docker-compose.yml` — Immich server, ML (GPU-enabled via `deploy.resources.reservations.devices`), PostgreSQL w/ pgvecto.rs, Redis. Upload volume → `/ironwolf/Immich`, DB volumes on local Docker storage
-3. Create `.env.example` with all Immich env vars (DB password, upload location, etc.)
-4. Create `.gitignore`, `README.md` (architecture, LXC config, GPU setup, deploy steps)
-5. Create `setup.sh` — idempotent bootstrap: install Docker CE, nvidia-container-toolkit, start services
-6. **Start Google Takeout export now** — request photos-only export, 50 GB chunks. Takes hours/days to prepare.
+- Git repo at `/home/jack/REPOS/Immich` with docker-compose.yml, hwaccel.transcoding.yml, .env.example, setup.sh, README.md, .gitignore
 
-### Phase 2: NVIDIA Driver on Proxmox Host *(web UI shell)*
+### Phase 2: NVIDIA Driver on Proxmox Host — COMPLETE
 
-> Requires host reboot — all VMs/LXCs restart (they have `onboot=1`)
+- NVIDIA 570.133.07 installed via .run installer (`/root/nvidia.run`)
+- Kernel 6.14.11-5-pve pinned via systemd-boot (NOT GRUB — system uses systemd-boot)
+- Secure Boot disabled in BIOS (was blocking module loading with "key rejected by service")
+- Modules auto-load via `/etc/modules-load.d/nvidia.conf`, nouveau blacklisted
+- Boot entry at `/boot/efi/loader/entries/*-6.14.11-5-pve.conf` includes `lockdown=none`
 
-7. Add Debian non-free firmware repos to `/etc/apt/sources.list`
-8. `apt install nvidia-driver nvidia-smi` → reboot
-9. Verify: `nvidia-smi` shows RTX 3070
-10. Persist modules: add `nvidia`, `nvidia-uvm` to `/etc/modules-load.d/nvidia.conf`
-11. `nvidia-modprobe -u` to ensure `/dev/nvidia-uvm` exists
+### Phase 3: Create LXC 113 — COMPLETE
 
-### Phase 3: Create LXC 113 *(Proxmox web UI or shell)*
+- Privileged LXC: Debian 13, 4 cores, 8 GB RAM, 32 GB rootfs, nesting=1, onboot=1
+- IP 192.168.1.113, bind mount `/mnt/ironwolf` → `/ironwolf`
+- GPU passthrough: cgroup2 allow majors 195 + 510, bind mounts for `/dev/nvidia*`
+- Config at `/etc/pve/lxc/113.conf`
 
-12. Create privileged LXC: Debian 13, 4 cores, 8 GB RAM, 32 GB rootfs, `nesting=1`, `onboot=1`, static IP 192.168.1.113, bind mounts for `/mnt/media` and `/mnt/ironwolf`
-13. Add GPU device passthrough to `/etc/pve/lxc/113.conf`:
-    - cgroup allow for nvidia device nodes (major 195, 236)
-    - bind mount `/dev/nvidia0`, `/dev/nvidiactl`, `/dev/nvidia-uvm`, `/dev/nvidia-uvm-tools`
-14. Start LXC 113
+### Phase 4: LXC Setup & Immich Deploy — COMPLETE
 
-### Phase 4: LXC Setup & Immich Deploy *(LXC console via web UI)*
+- Docker CE 29.3.0 installed
+- NVIDIA Container Toolkit installed, docker runtime configured
+- NVIDIA driver 570.133.07 userspace installed inside LXC (--no-kernel-module)
+- Immich v2.5.6 stack running: server (port 2283), ML (CUDA), postgres, redis
+- All 4 containers healthy, `nvidia-smi` works inside ML container
+- Config at `/opt/immich/` (.env, docker-compose.yml, hwaccel.transcoding.yml)
 
-15. Install Docker CE (`curl -fsSL https://get.docker.com | sh`)
-16. Install NVIDIA Container Toolkit — must match host driver version
-17. Verify GPU in Docker: `docker run --rm --gpus all nvidia/cuda:... nvidia-smi`
-18. Create directories: `/ironwolf/Immich/upload`, `/opt/immich`
-19. Deploy docker-compose + `.env` to `/opt/immich/` (git clone or paste via web console)
-20. `docker compose up -d` → verify `curl http://localhost:2283` returns Immich
+### Phase 5: Cloudflare Tunnel — COMPLETE
 
-### Phase 5: Cloudflare Tunnel *(Proxmox host shell)*
+- Added `photos.jackshome.com → http://192.168.1.113:2283` to tunnel config
+- DNS CNAME created via `cloudflared tunnel route dns`
+- `https://photos.jackshome.com` returns HTTP/2 200 through Cloudflare
 
-21. Add to `/root/.cloudflared/config.yml` (before catch-all):
-    - `hostname: photos.jackshome.com` → `service: http://192.168.1.113:2283`
-22. `cloudflared tunnel route dns home-media photos.jackshome.com`
-23. `cloudflared tunnel ingress validate && systemctl restart cloudflared`
-24. Test: `https://photos.jackshome.com` → Immich setup wizard
+### Phase 6: Setup & Google Photos Migration — TODO
 
-### Phase 6: Setup & Google Photos Migration
+1. Complete Immich setup wizard (admin account) at `https://photos.jackshome.com`
+2. Install Immich app on Pixel 8 Pro → server URL `https://photos.jackshome.com` → enable auto-backup
+3. Google Photos migration:
+   - Request Google Takeout export (photos-only, 50 GB chunks)
+   - Transfer archives to `/ironwolf/Immich/import/`
+   - Use **`immich-go`** to import with metadata (dates, GPS from JSON sidecars)
+   - Verify: face recognition, smart search, dates/locations
 
-25. Complete Immich setup wizard (admin account) via web UI
-26. Install Immich app on Pixel 8 Pro → server URL `https://photos.jackshome.com` → enable auto-backup
-27. Google Photos migration:
-    - Download Takeout archives → transfer to `/ironwolf/Immich/import/` *(best done on LAN)*
-    - Use **`immich-go`** tool — handles Google Takeout JSON sidecar metadata (dates, GPS) properly
-    - Verify: face recognition runs, smart search works, dates/locations correct
+### Phase 7: Documentation Updates — COMPLETE
 
-### Phase 7: Documentation Updates *(remote, can do now)*
-
-28. Update `HOME_NETWORK/Network_Configuration_Overview.md` — add 192.168.1.113
-29. Update `HOME_NETWORK/PROXMOX/README.md` — add LXC 113
-30. Update `PROXMOX/README.md` — add to inventory + resource table
-31. Update `jackshome.com/tunnel/config.example.yml` + `jackshome.com/dns/dns_records.yml`
+- Updated PROXMOX/README.md, HOME_NETWORK/PROXMOX/README.md, Network_Configuration_Overview.md
+- Updated jackshome.com/tunnel/config.example.yml, dns/dns_records.yml
 
 ---
-
-### Verification
-
-1. `nvidia-smi` on host shows RTX 3070
-2. GPU visible inside Docker in LXC 113
-3. `curl http://192.168.1.113:2283/api/server-info/ping` → `{"res":"pong"}`
-4. `https://photos.jackshome.com` loads through tunnel
-5. Face recognition processes a test photo in seconds (GPU)
-6. Mobile app connects and uploads
-7. `immich-go` imports a sample Takeout archive with correct metadata
-
-### What Can Be Done Now (remote)
-
-- **Phase 1** — repo scaffolding (all local files)
-- **Phase 7** — doc updates (all local edits)
-- **Request Google Takeout export** — takes hours/days, start early
-- **Phase 2–5** — needs Proxmox web UI shell at `proxmox.jackshome.com` (doable remotely, but Phase 2 requires host reboot which briefly takes all services down)
 
 ### Excluded (future projects)
 
@@ -98,8 +70,8 @@ Deploy Immich as a self-hosted Google Photos replacement on Proxmox — Docker-i
 - Immich OAuth/SSO
 - NAS expansion
 
-### Further Considerations
+### Notes
 
-1. **Host reboot timing** — NVIDIA driver install (Phase 2) requires rebooting Proxmox, taking all services down briefly. Recommend doing this at a low-traffic time. All services auto-restart (`onboot=1`).
-2. **NVIDIA driver version matching** — the driver inside the LXC must match the host. The recommended approach is to bind-mount the host's NVIDIA libraries into the container rather than installing separately, to avoid version skew.
-3. **Rootfs size** — 32 GB should cover PostgreSQL + ML models + Docker images. If the library grows very large (500 GB+), the DB could need more space — easy to resize LXC rootfs later via `pct resize 113 rootfs +16G`.
+- **systemd-boot, not GRUB** — Proxmox uses systemd-boot (Boot0000). Use `bootctl` commands, not `update-grub`.
+- **NVIDIA driver matching** — LXC has userspace-only install (--no-kernel-module) matching host 570.133.07. On driver updates, must reinstall in both places.
+- **Rootfs**: 32 GB covers DB + ML models + Docker images. Resize with `pct resize 113 rootfs +16G` if needed.
