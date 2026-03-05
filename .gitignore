@@ -1,0 +1,21 @@
+# Secrets
+.env
+
+# Docker
+docker-compose.override.yml
+
+# Data (managed by Docker / bind mounts, not tracked)
+postgres/
+model-cache/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp
+*~

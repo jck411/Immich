@@ -1,0 +1,15 @@
+# Hardware-accelerated transcoding (NVENC — RTX 3070)
+# Referenced by docker-compose.yml → immich-server
+
+services:
+  nvenc:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - compute
+                - video
