@@ -47,15 +47,17 @@ Deploy Immich as a self-hosted Google Photos replacement on Proxmox — Docker-i
 - DNS CNAME created via `cloudflared tunnel route dns`
 - `https://photos.jackshome.com` returns HTTP/2 200 through Cloudflare
 
-### Phase 6: Setup & Google Photos Migration — TODO
+### Phase 6: Setup & Google Photos Migration — COMPLETE
 
-1. Complete Immich setup wizard (admin account) at `https://photos.jackshome.com`
-2. Install Immich app on Pixel 8 Pro → server URL `https://photos.jackshome.com` → enable auto-backup
-3. Google Photos migration:
-   - Request Google Takeout export (photos-only, 50 GB chunks)
-   - Transfer archives to `/ironwolf/Immich/import/`
-   - Use **`immich-go`** to import with metadata (dates, GPS from JSON sidecars)
-   - Verify: face recognition, smart search, dates/locations
+1. Immich setup wizard completed (admin account created)
+2. Google Photos migration complete:
+   - 21 × ~50 GB Takeout `.tgz` archives downloaded and transferred to LXC 113
+   - `immich-go` v0.31.0 used to extract and import with metadata (dates, GPS from JSON sidecars)
+   - **33,954 assets imported** (31,946 photos + 2,008 videos, 271 GB)
+   - 0 upload errors; 6 transient server errors on face thumbnails (cosmetic)
+   - Archives cleaned up after import; 5.2 TB free on IronWolf
+   - "No Faces" album created with 13,883 landscape/object/drawing photos
+3. Install Immich app on Pixel 8 Pro → server URL `https://photos.jackshome.com` → enable auto-backup
 
 ### Phase 7: Documentation Updates — COMPLETE
 
