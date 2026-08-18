@@ -37,7 +37,7 @@ Deploy Immich as a self-hosted Google Photos replacement on Proxmox — Docker-i
 - Docker CE 29.3.0 installed
 - NVIDIA Container Toolkit installed, docker runtime configured
 - NVIDIA driver 570.133.07 userspace installed inside LXC (--no-kernel-module)
-- Immich v2.5.6 stack running: server (port 2283), ML (CUDA), postgres, redis
+- Immich v3.1.0 stack running (upgraded from v2.6.3 on 2026-08-18): server (port 2283), ML (CUDA), postgres, redis
 - All 4 containers healthy, `nvidia-smi` works inside ML container
 - Config at `/opt/immich/` (.env, docker-compose.yml, hwaccel.transcoding.yml)
 

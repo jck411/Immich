@@ -24,7 +24,7 @@ Cloudflare Tunnel (photos.jackshome.com)
 LXC 113 (192.168.1.113:2283)
   ├── immich_server        — Web UI + API + media processing
   ├── immich_machine_learning — Face recognition, smart search (CUDA / RTX 3070)
-  ├── immich_postgres      — PostgreSQL + pgvecto.rs (vector search)
+  ├── immich_postgres      — PostgreSQL + VectorChord (vector search)
   └── immich_redis         — Cache (Valkey)
 
 Storage:
@@ -97,7 +97,7 @@ pct exec 113 -- bash /opt/immich/setup.sh
 
 ```bash
 # Health check
-curl http://192.168.1.113:2283/api/server-info/ping
+curl http://192.168.1.113:2283/api/server/ping
 
 # GPU in Docker
 pct exec 113 -- docker run --rm --gpus all nvidia/cuda:12.4.0-base-ubuntu22.04 nvidia-smi

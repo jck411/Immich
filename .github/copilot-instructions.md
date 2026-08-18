@@ -52,7 +52,7 @@ Immich/
 
 ## Quick Reference
 
-- **Stack**: Docker Compose (Immich server, ML, PostgreSQL + pgvecto.rs, Valkey/Redis)
+- **Stack**: Docker Compose (Immich server, ML, PostgreSQL + VectorChord, Valkey/Redis)
 - **GPU**: RTX 3070 via NVIDIA Container Toolkit (CUDA ML image, NVENC transcoding)
 - **Deploy**: `scp` files to LXC → `setup.sh` or `docker compose up -d`
 - **Update**: Edit `IMMICH_VERSION` in `.env` → `docker compose pull && docker compose up -d`
