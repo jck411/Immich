@@ -15,9 +15,8 @@ Self-hosted Google Photos replacement running on Proxmox LXC 113 with RTX 3070 G
 
 | Repo | What to update |
 |------|---------------|
-| `~/REPOS/HOME_NETWORK` | IP table (`Network_Configuration_Overview.md`), `PROXMOX/README.md` |
+| `~/REPOS/NETWORK` | IP allocation, DNS records, and Cloudflare Tunnel ingress |
 | `~/REPOS/PROXMOX` | LXC inventory, resource table, LXC pattern, startup commands |
-| `~/REPOS/jackshome.com` | Tunnel config (`tunnel/config.example.yml`), DNS records (`dns/dns_records.yml`) |
 
 ## What Lives Here vs Elsewhere
 
@@ -25,9 +24,8 @@ Self-hosted Google Photos replacement running on Proxmox LXC 113 with RTX 3070 G
 |---------|----------|
 | Docker Compose, env config, setup script | This repo |
 | Deployment plan and progress | This repo (`PLAN.md`) |
-| Network topology, IP allocation | `~/REPOS/HOME_NETWORK` |
+| Network topology, IP allocation, tunnel ingress, DNS records | `~/REPOS/NETWORK` |
 | Proxmox host config, LXC creation, GPU passthrough | `~/REPOS/PROXMOX` |
-| Tunnel ingress, DNS records | `~/REPOS/jackshome.com` |
 | Credentials, API keys, DB passwords | Never tracked — `.env` only (gitignored) |
 
 ## Project Structure
