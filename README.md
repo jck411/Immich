@@ -33,6 +33,25 @@ Storage:
   model-cache volume       ← ML models (~4 GB, Docker volume)
 ```
 
+## Verified storage boundary and pending isolation
+
+On October 2, 2026, CT113 had only `mp0: /mnt/ironwolf,mp=/ironwolf`, not a
+`/media` mount. Docker exposed only `/ironwolf/Immich/upload` as the server's
+writable `/data`; `/data/backups` maps to its existing `upload/backups` directory.
+PostgreSQL `/opt/immich/postgres` and the model-cache volume are on the guest
+rootfs. The broad LXC bind nevertheless lets **guest root** write the sibling
+`/ironwolf/backups/homelab-critical/restic`; Docker's narrower app mount does not
+protect against compromise of the privileged guest.
+
+The [PROXMOX archive-isolation proposal](../PROXMOX/docs/critical-backups.md#archive-isolation-proposal--not-deployed)
+would narrow the guest bind to `/mnt/ironwolf/Immich → /ironwolf/Immich`, keeping
+upload, application-managed backup and documented import paths unchanged.
+No data move, Compose edit, mount/permission change or service restart has been
+performed. Host NFS exposure must be corrected in the same coordinated plan,
+and the native guest-backup allowlist must support the new exact bind first.
+Native guest archives exclude the external Immich tree; they cover the system
+and database disk, not original-photo recovery.
+
 ## Files
 
 | File | Purpose |
@@ -60,8 +79,7 @@ pct create 113 local:vztmpl/debian-13-standard_13.0-1_amd64.tar.zst \
   --cores 4 --memory 8192 --swap 2048 \
   --net0 name=eth0,bridge=vmbr0,ip=192.168.1.113/24,gw=192.168.1.1 \
   --storage local-lvm --rootfs local-lvm:32 \
-  --mp0 /mnt/media,mp=/media \
-  --mp1 /mnt/ironwolf,mp=/ironwolf \
+  --mp0 /mnt/ironwolf,mp=/ironwolf \
   --unprivileged 0 \
   --features nesting=1 \
   --onboot 1 \
