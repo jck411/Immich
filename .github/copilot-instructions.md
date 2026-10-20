@@ -9,7 +9,6 @@ Self-hosted Google Photos replacement running on Proxmox LXC 113 with RTX 3070 G
 - Photos stored on IronWolf 8TB (`/mnt/ironwolf/Immich/`), DB on NVMe rootfs
 - Exposed via Cloudflare Tunnel at `photos.jackshome.com`
 - `README.md` is the source of truth for deploy steps and architecture
-- `PLAN.md` tracks the phased rollout — update as phases complete
 
 ## Related Repos
 
@@ -23,7 +22,6 @@ Self-hosted Google Photos replacement running on Proxmox LXC 113 with RTX 3070 G
 | Content | Location |
 |---------|----------|
 | Docker Compose, env config, setup script | This repo |
-| Deployment plan and progress | This repo (`PLAN.md`) |
 | Network topology, IP allocation, tunnel ingress, DNS records | `~/REPOS/NETWORK` |
 | Proxmox host config, LXC creation, GPU passthrough | `~/REPOS/PROXMOX` |
 | Credentials, API keys, DB passwords | Never tracked — `.env` only (gitignored) |
@@ -37,7 +35,6 @@ Immich/
 ├── .env.example                # Template environment variables
 ├── setup.sh                    # Idempotent LXC bootstrap script
 ├── README.md                   # Architecture, deploy steps, maintenance
-├── PLAN.md                     # Phased deployment plan (update as phases complete)
 └── .gitignore
 ```
 
@@ -45,7 +42,6 @@ Immich/
 
 - Propagate changes to ALL affected repos when IPs, ports, or services change
 - No credentials in tracked files — `.env` is gitignored, use `.env.example` for templates
-- Keep `PLAN.md` current — mark phases complete, add notes on deviations
 - Docker Compose should track upstream Immich releases — pin `IMMICH_VERSION` in `.env`, not in compose
 - GPU config (cgroup rules, device mounts) lives in Proxmox LXC config (`/etc/pve/lxc/113.conf`), not here
 - Test changes locally with `docker compose config` before deploying

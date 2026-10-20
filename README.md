@@ -33,9 +33,9 @@ Storage:
   model-cache volume       ← ML models (~4 GB, Docker volume)
 ```
 
-## Verified storage boundary and pending isolation
+## Storage boundary and pending isolation
 
-On October 2, 2026, CT113 had only `mp0: /mnt/ironwolf,mp=/ironwolf`, not a
+CT113 has only `mp0: /mnt/ironwolf,mp=/ironwolf`, not a
 `/media` mount. Docker exposed only `/ironwolf/Immich/upload` as the server's
 writable `/data`; `/data/backups` maps to its existing `upload/backups` directory.
 PostgreSQL `/opt/immich/postgres` and the model-cache volume are on the guest
@@ -46,9 +46,8 @@ protect against compromise of the privileged guest.
 The [PROXMOX archive-isolation proposal](../PROXMOX/docs/critical-backups.md#archive-isolation-proposal--not-deployed)
 would narrow the guest bind to `/mnt/ironwolf/Immich → /ironwolf/Immich`, keeping
 upload, application-managed backup and documented import paths unchanged.
-No data move, Compose edit, mount/permission change or service restart has been
-performed. Host NFS exposure must be corrected in the same coordinated plan,
-and the native guest-backup allowlist must support the new exact bind first.
+The proposal is not applied. Host NFS exposure must be corrected in the same
+coordinated plan, and the native guest-backup allowlist must support the new exact bind first.
 Native guest archives exclude the external Immich tree; they cover the system
 and database disk, not original-photo recovery.
 
@@ -60,15 +59,13 @@ and database disk, not original-photo recovery.
 | `hwaccel.transcoding.yml` | NVIDIA GPU config for video transcoding |
 | `.env.example` | Template environment variables |
 | `setup.sh` | Idempotent LXC bootstrap (Docker + NVIDIA toolkit + start) |
-| `PLAN.md` | Full deployment plan with all phases |
 
 ## Deploy
 
-Full step-by-step instructions are in [PLAN.md](PLAN.md). Summary:
-
 ### Prerequisites (Proxmox host)
 
-1. **NVIDIA driver** installed on Proxmox host (`nvidia-smi` shows RTX 3070)
+1. **NVIDIA driver** installed on Proxmox host (`nvidia-smi` shows RTX 3070); the
+   [recovery guide](../PROXMOX/docs/recovery-guide.md) owns driver packages and updates
 2. **LXC 113** created with GPU device passthrough (see LXC Config below)
 
 ### LXC Creation
@@ -90,7 +87,7 @@ pct create 113 local:vztmpl/debian-13-standard_13.0-1_amd64.tar.zst \
 
 ```
 lxc.cgroup2.devices.allow: c 195:* rwm
-lxc.cgroup2.devices.allow: c 236:* rwm
+lxc.cgroup2.devices.allow: c 510:* rwm
 lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file
 lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file
 lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file
@@ -154,6 +151,6 @@ pct exec 113 -- docker compose -f /opt/immich/docker-compose.yml restart
 
 | Repo | What to update |
 |------|---------------|
-| [HOME_NETWORK](https://github.com/jck411/HOME_NETWORK) | IP table, PROXMOX/README.md, tunnel docs |
+| [NETWORK](https://github.com/jck411/NETWORK) | IP allocation, DNS records, tunnel ingress |
 | [PROXMOX](https://github.com/jck411/PROXMOX) | LXC inventory, resource table |
 | [jackshome.com](https://github.com/jck411/jackshome.com) | Tunnel config, DNS records |
