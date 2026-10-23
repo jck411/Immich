@@ -14,16 +14,16 @@ Self-hosted Google Photos replacement running on Proxmox LXC 113 with RTX 3070 G
 
 | Repo | What to update |
 |------|---------------|
-| `~/REPOS/NETWORK` | IP allocation, DNS records, and Cloudflare Tunnel ingress |
-| `~/REPOS/PROXMOX` | LXC inventory, resource table, LXC pattern, startup commands |
+| `~/Projects/NETWORK` | IP allocation, DNS records, and Cloudflare Tunnel ingress |
+| `~/Projects/PROXMOX` | LXC inventory, resource table, LXC pattern, startup commands |
 
 ## What Lives Here vs Elsewhere
 
 | Content | Location |
 |---------|----------|
 | Docker Compose, env config, setup script | This repo |
-| Network topology, IP allocation, tunnel ingress, DNS records | `~/REPOS/NETWORK` |
-| Proxmox host config, LXC creation, GPU passthrough | `~/REPOS/PROXMOX` |
+| Network topology, IP allocation, tunnel ingress, DNS records | `~/Projects/NETWORK` |
+| Proxmox host config, LXC creation, GPU passthrough | `~/Projects/PROXMOX` |
 | Credentials, API keys, DB passwords | Never tracked — `.env` only (gitignored) |
 
 ## Project Structure
