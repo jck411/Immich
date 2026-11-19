@@ -59,6 +59,24 @@ and database disk, not original-photo recovery.
 | `hwaccel.transcoding.yml` | NVIDIA GPU config for video transcoding |
 | `.env.example` | Template environment variables |
 | `setup.sh` | Idempotent LXC bootstrap (Docker + NVIDIA toolkit + start) |
+| `tv-screensaver/` | Nightly "TV Screensaver" album sync (see below) |
+
+## TV Screensaver album
+
+The living-room Streamer's screensaver (Immich TV app, Albums mode) shows the album
+**TV Screensaver**: Jack's photos and videos from 2021 on that show any detected face
+(Immich face detection, named or not) or a dog (CLIP distance to "a photo of a dog" below 0.77, checked by eye on
+samples). Edits to the album by hand are overwritten.
+
+- Installed in CT113: `/opt/immich/tv-screensaver/sync.py`, plus
+  `tv-screensaver-album.service` and `.timer` in `/etc/systemd/system`. It runs daily at 04:30
+  New York time.
+- Its own API key (`/opt/immich/tv-screensaver/api-key`, mode 600, not in Git) has only the
+  album.read, album.create, albumAsset.create and albumAsset.delete permissions.
+- It won't shrink the album below 1,000 matches. It exits with an error instead, for example
+  if ML or face data went missing.
+- Check: `pct exec 113 -- journalctl -u tv-screensaver-album -n 5`. Run now:
+  `pct exec 113 -- systemctl start tv-screensaver-album`.
 
 ## Deploy
 

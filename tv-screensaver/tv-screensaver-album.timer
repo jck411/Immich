@@ -1,0 +1,7 @@
+[Unit]
+Description=Nightly refresh of the Immich "TV Screensaver" album
+[Timer]
+OnCalendar=*-*-* 04:30 America/New_York
+Persistent=true
+[Install]
+WantedBy=timers.target

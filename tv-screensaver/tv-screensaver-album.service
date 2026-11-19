@@ -1,0 +1,6 @@
+[Unit]
+Description=Refresh Immich "TV Screensaver" album (any face or dogs)
+After=docker.service
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/immich/tv-screensaver/sync.py
