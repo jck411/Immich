@@ -101,15 +101,28 @@ pct create 113 local:vztmpl/debian-13-standard_13.0-1_amd64.tar.zst \
   --start 0
 ```
 
-### GPU Passthrough (add to `/etc/pve/lxc/113.conf`)
+### GPU Passthrough (run on the Proxmox host)
 
+```bash
+pct set 113 --dev0 /dev/nvidia0 --dev1 /dev/nvidiactl \
+  --dev2 /dev/nvidia-uvm --dev3 /dev/nvidia-uvm-tools
 ```
-lxc.cgroup2.devices.allow: c 195:* rwm
-lxc.cgroup2.devices.allow: c 510:* rwm
-lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file
-lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file
-lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file
-lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file
+
+Use Proxmox `devN` entries, not hand-written `lxc.cgroup2.devices.allow` lines:
+the `nvidia-uvm` device number is assigned at boot and can change, and a stale
+number makes CUDA fail (`CUDA failure 999`) so machine learning silently falls
+back to the CPU. `devN` reads the current numbers at container start.
+
+### GPU settings inside Immich
+
+Administration → Settings → Video Transcoding → Hardware Acceleration is set to
+**NVENC** with hardware decoding on, so video conversion runs on the RTX 3070.
+To confirm both GPU paths after a driver, kernel or Immich change:
+
+```bash
+pct exec 113 -- docker logs --since 10m immich_machine_learning 2>&1 | grep -c "Falling back"  # want 0
+pct exec 113 -- docker logs --since 10m immich_server 2>&1 | grep -i nvenc
+nvidia-smi --query-compute-apps=process_name,used_memory --format=csv  # python appears after a smart search
 ```
 
 ### Start Immich
